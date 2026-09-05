@@ -1,0 +1,300 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+[x-cloak] {
+    display: none !important;
+}
+
+@layer base {
+    html {
+        color-scheme: light;
+    }
+
+    html.dark {
+        color-scheme: dark;
+    }
+}
+
+@layer components {
+    .dark .bg-white,
+    .dark .bg-white\/80 {
+        background-color: theme('colors.slate.900');
+    }
+
+    .dark .bg-slate-50,
+    .dark .bg-slate-50\/60 {
+        background-color: theme('colors.slate.950');
+    }
+
+    .dark .bg-slate-100 {
+        background-color: theme('colors.slate.800');
+    }
+
+    .dark .bg-teal-50 {
+        background-color: rgb(19 78 74 / 0.38);
+    }
+
+    .dark .bg-emerald-50 {
+        background-color: rgb(6 78 59 / 0.34);
+    }
+
+    .dark .bg-rose-50 {
+        background-color: rgb(136 19 55 / 0.28);
+    }
+
+    .dark .border-slate-100,
+    .dark .border-slate-200,
+    .dark .border-gray-300 {
+        border-color: theme('colors.slate.800');
+    }
+
+    .dark .border-slate-300,
+    .dark .border-slate-400 {
+        border-color: theme('colors.slate.700');
+    }
+
+    .dark .border-teal-200 {
+        border-color: theme('colors.teal.800');
+    }
+
+    .dark .border-emerald-200 {
+        border-color: theme('colors.emerald.800');
+    }
+
+    .dark .border-rose-200 {
+        border-color: theme('colors.rose.800');
+    }
+
+    .dark .hover\:border-slate-300:hover {
+        border-color: theme('colors.slate.600');
+    }
+
+    .dark .hover\:bg-slate-50:hover,
+    .dark .hover\:bg-gray-50:hover,
+    .dark .hover\:bg-gray-100:hover,
+    .dark .focus\:bg-slate-100:focus,
+    .dark .focus\:bg-gray-100:focus {
+        background-color: theme('colors.slate.800');
+    }
+
+    .dark .hover\:text-slate-700:hover,
+    .dark .hover\:text-slate-800:hover,
+    .dark .hover\:text-slate-900:hover,
+    .dark .hover\:text-gray-900:hover,
+    .dark .focus\:text-slate-800:focus {
+        color: theme('colors.slate.100');
+    }
+
+    .dark .focus\:ring-offset-2:focus {
+        --tw-ring-offset-color: theme('colors.slate.950');
+    }
+
+    .dark .text-slate-950,
+    .dark .text-slate-900,
+    .dark .text-gray-900 {
+        color: theme('colors.slate.50');
+    }
+
+    .dark .text-slate-800,
+    .dark .text-slate-700,
+    .dark .text-gray-700 {
+        color: theme('colors.slate.200');
+    }
+
+    .dark .text-slate-600,
+    .dark .text-slate-500,
+    .dark .text-gray-600 {
+        color: theme('colors.slate.400');
+    }
+
+    .dark .text-teal-700,
+    .dark .text-teal-800 {
+        color: theme('colors.teal.300');
+    }
+
+    .dark .text-emerald-700,
+    .dark .text-emerald-800,
+    .dark .text-emerald-950 {
+        color: theme('colors.emerald.200');
+    }
+
+    .dark .text-rose-600,
+    .dark .text-rose-700,
+    .dark .text-rose-800,
+    .dark .text-rose-950 {
+        color: theme('colors.rose.200');
+    }
+
+    .dark .shadow-sm,
+    .dark .shadow-md,
+    .dark .shadow-lg,
+    .dark .shadow-xl {
+        --tw-shadow-color: rgb(2 6 23 / 0.42);
+        --tw-shadow: var(--tw-shadow-colored);
+    }
+
+    .dark input,
+    .dark select,
+    .dark textarea {
+        background-color: theme('colors.slate.950');
+        border-color: theme('colors.slate.700');
+        color: theme('colors.slate.100');
+    }
+
+    .dark input::placeholder,
+    .dark textarea::placeholder {
+        color: theme('colors.slate.500');
+    }
+
+    .dark input[type='color'] {
+        background-color: theme('colors.slate.900');
+    }
+
+    .dark input[type='checkbox'],
+    .dark input[type='radio'] {
+        background-color: theme('colors.slate.900');
+    }
+
+    .dark input:focus,
+    .dark select:focus,
+    .dark textarea:focus {
+        border-color: theme('colors.teal.400');
+        --tw-ring-color: theme('colors.teal.400');
+    }
+
+    .calendar-day {
+        background-color: theme('colors.white');
+        border-color: theme('colors.slate.200');
+    }
+
+    .calendar-day:hover:not(:disabled) {
+        border-color: theme('colors.teal.300');
+        box-shadow: theme('boxShadow.sm');
+        transform: translateY(-1px);
+    }
+
+    .calendar-day[data-status='studied'] {
+        background-color: theme('colors.emerald.50');
+        border-color: theme('colors.emerald.200');
+    }
+
+    .calendar-day[data-status='studied'] .calendar-status-dot {
+        background-color: theme('colors.emerald.500');
+    }
+
+    .calendar-day[data-status='studied'] .calendar-status-label,
+    .calendar-day[data-status='studied'] .calendar-day-number {
+        color: theme('colors.emerald.900');
+    }
+
+    .calendar-day[data-status='not_studied'] {
+        background-color: theme('colors.rose.50');
+        border-color: theme('colors.rose.200');
+    }
+
+    .calendar-day[data-status='not_studied'] .calendar-status-dot {
+        background-color: theme('colors.rose.500');
+    }
+
+    .calendar-day[data-status='not_studied'] .calendar-status-label,
+    .calendar-day[data-status='not_studied'] .calendar-day-number {
+        color: theme('colors.rose.900');
+    }
+
+    .calendar-day[data-status='unregistered'] {
+        background-color: theme('colors.white');
+        border-color: theme('colors.slate.200');
+    }
+
+    .calendar-day[data-status='unregistered'] .calendar-status-dot {
+        background-color: theme('colors.white');
+        border: 1px solid theme('colors.slate.400');
+    }
+
+    .calendar-day[data-status='unregistered'] .calendar-status-label,
+    .calendar-day[data-status='unregistered'] .calendar-day-number {
+        color: theme('colors.slate.700');
+    }
+
+    .calendar-day[data-today='true'] {
+        border-color: theme('colors.teal.500');
+        box-shadow: 0 0 0 2px theme('colors.teal.100');
+    }
+
+    .calendar-day[data-today='true'] .calendar-today-label {
+        display: inline-flex;
+        background-color: theme('colors.teal.50');
+    }
+
+    .calendar-day[data-future='true'] {
+        background-color: theme('colors.slate.50');
+        border-color: theme('colors.slate.100');
+        opacity: 0.62;
+    }
+
+    .dark .calendar-day {
+        background-color: theme('colors.slate.900');
+        border-color: theme('colors.slate.800');
+    }
+
+    .dark .calendar-day:hover:not(:disabled) {
+        border-color: theme('colors.teal.700');
+        box-shadow: 0 12px 24px rgb(2 6 23 / 0.28);
+    }
+
+    .dark .calendar-day[data-status='studied'] {
+        background-color: rgb(6 78 59 / 0.34);
+        border-color: theme('colors.emerald.800');
+    }
+
+    .dark .calendar-day[data-status='studied'] .calendar-status-label,
+    .dark .calendar-day[data-status='studied'] .calendar-day-number {
+        color: theme('colors.emerald.100');
+    }
+
+    .dark .calendar-day[data-status='not_studied'] {
+        background-color: rgb(136 19 55 / 0.28);
+        border-color: theme('colors.rose.800');
+    }
+
+    .dark .calendar-day[data-status='not_studied'] .calendar-status-label,
+    .dark .calendar-day[data-status='not_studied'] .calendar-day-number {
+        color: theme('colors.rose.100');
+    }
+
+    .dark .calendar-day[data-status='unregistered'] {
+        background-color: theme('colors.slate.900');
+        border-color: theme('colors.slate.800');
+    }
+
+    .dark .calendar-day[data-status='unregistered'] .calendar-status-dot {
+        background-color: theme('colors.slate.950');
+        border-color: theme('colors.slate.500');
+    }
+
+    .dark .calendar-day[data-status='unregistered'] .calendar-status-label,
+    .dark .calendar-day[data-status='unregistered'] .calendar-day-number {
+        color: theme('colors.slate.200');
+    }
+
+    .dark .calendar-day[data-today='true'] {
+        border-color: theme('colors.teal.400');
+        box-shadow: 0 0 0 2px rgb(45 212 191 / 0.2);
+    }
+
+    .dark .calendar-day[data-today='true'] .calendar-today-label {
+        background-color: rgb(19 78 74 / 0.52);
+    }
+
+    .dark .calendar-day[data-future='true'] {
+        background-color: theme('colors.slate.950');
+        border-color: theme('colors.slate.800');
+        opacity: 0.54;
+    }
+
+    .dark .calendar-day-empty {
+        background-color: rgb(15 23 42 / 0.44);
+        border-color: theme('colors.slate.800');
+    }
+}
