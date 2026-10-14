@@ -20,6 +20,95 @@
         })"
         x-on:study-record-saved.window="refresh()"
     >
+        <section aria-label="Indicadores diarios e semanais" class="grid gap-4 sm:grid-cols-3">
+            <div class="min-w-0 border-l-4 border-teal-600 py-2 pl-4">
+                <p class="text-sm text-slate-600">Tempo estudado hoje</p>
+                <p class="mt-2 text-xl font-semibold text-slate-950" x-text="stats.study_indicators.daily.duration_label">{{ $dashboard['study_indicators']['daily']['duration_label'] }}</p>
+            </div>
+            <div class="min-w-0 border-l-4 border-sky-600 py-2 pl-4">
+                <p class="text-sm text-slate-600">Tempo nesta semana</p>
+                <p class="mt-2 text-xl font-semibold text-slate-950" x-text="stats.study_indicators.weekly.duration_label">{{ $dashboard['study_indicators']['weekly']['duration_label'] }}</p>
+                <p class="mt-1 text-xs text-slate-500" x-text="stats.study_indicators.weekly.period_label">{{ $dashboard['study_indicators']['weekly']['period_label'] }}</p>
+            </div>
+            <div class="min-w-0 border-l-4 border-emerald-600 py-2 pl-4">
+                <p class="text-sm text-slate-600">Dias estudados na semana</p>
+                <p class="mt-2 text-xl font-semibold text-slate-950"><span x-text="stats.study_indicators.weekly.studied_days">{{ $dashboard['study_indicators']['weekly']['studied_days'] }}</span> / 7</p>
+            </div>
+        </section>
+
+        <section aria-labelledby="dashboard-planning-title" class="border-y border-slate-200 py-6">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <h2 id="dashboard-planning-title" class="text-lg font-semibold text-slate-950">Planejamento de estudos</h2>
+                <a href="{{ route('schedule.index') }}" class="text-sm font-semibold text-teal-800 underline focus:outline-none focus:ring-2 focus:ring-teal-600">Abrir cronograma</a>
+            </div>
+            <dl class="mt-5 grid gap-4 sm:grid-cols-3">
+                <div><dt class="text-sm text-slate-600">Previsto nesta semana</dt><dd class="mt-1 text-xl font-semibold text-slate-950" x-text="stats.planning.planned_duration">{{ $dashboard['planning']['planned_duration'] }}</dd></div>
+                <div><dt class="text-sm text-slate-600">Realizado com planejamento</dt><dd class="mt-1 text-xl font-semibold text-emerald-800" x-text="stats.study_indicators.weekly.linked_duration">{{ $dashboard['study_indicators']['weekly']['linked_duration'] }}</dd></div>
+                <div><dt class="text-sm text-slate-600">Estudos avulsos na semana</dt><dd class="mt-1 text-xl font-semibold text-sky-800" x-text="stats.study_indicators.weekly.unplanned_duration">{{ $dashboard['study_indicators']['weekly']['unplanned_duration'] }}</dd></div>
+            </dl>
+            <p class="mt-4 text-sm text-slate-600"><span x-text="stats.planning.pending_count">{{ $dashboard['planning']['pending_count'] }}</span> pendencias ate os proximos 7 dias; <span x-text="stats.planning.overdue_count">{{ $dashboard['planning']['overdue_count'] }}</span> em atraso.</p>
+            <div class="mt-5 grid gap-6 md:grid-cols-2">
+                <section aria-labelledby="upcoming-title">
+                    <h3 id="upcoming-title" class="text-sm font-semibold text-slate-900">Proximas sessoes · 7 dias</h3>
+                    <div class="mt-3 flex flex-col gap-3">
+                        <template x-for="session in stats.planning.upcoming" :key="session.id">
+                            <article class="min-w-0 rounded-lg border border-slate-200 bg-white p-3">
+                                <p class="break-words text-sm font-semibold text-slate-900" x-text="session.subject"></p>
+                                <p class="mt-1 break-words text-sm text-slate-600" x-text="session.content"></p>
+                                <p class="mt-2 text-xs text-slate-600"><span x-text="session.date_label"></span> · <span x-text="session.time"></span> · <span x-text="session.status"></span></p>
+                                <a :href="@js(route('schedule.index')) + '?week=' + session.date" class="mt-2 inline-block text-xs font-semibold text-teal-800 underline focus:outline-none focus:ring-2 focus:ring-teal-600">Ver sessao</a>
+                            </article>
+                        </template>
+                    </div>
+                    <p class="mt-3 text-sm text-slate-500" x-show="stats.planning.upcoming.length === 0">Nenhuma sessao prevista nos proximos 7 dias.</p>
+                </section>
+                <section aria-labelledby="overdue-title">
+                    <h3 id="overdue-title" class="text-sm font-semibold text-amber-800">Sessoes atrasadas</h3>
+                    <div class="mt-3 flex flex-col gap-3">
+                        <template x-for="session in stats.planning.overdue" :key="session.id">
+                            <article class="min-w-0 rounded-lg border border-amber-200 bg-white p-3">
+                                <p class="break-words text-sm font-semibold text-slate-900" x-text="session.subject"></p>
+                                <p class="mt-1 break-words text-sm text-slate-600" x-text="session.content"></p>
+                                <p class="mt-2 text-xs text-amber-800"><span x-text="session.date_label"></span> · <span x-text="session.status"></span> · Em atraso</p>
+                                <a :href="@js(route('schedule.index')) + '?week=' + session.date" class="mt-2 inline-block text-xs font-semibold text-teal-800 underline focus:outline-none focus:ring-2 focus:ring-teal-600">Acompanhar ou reagendar</a>
+                            </article>
+                        </template>
+                    </div>
+                    <p class="mt-3 text-sm text-slate-500" x-show="stats.planning.overdue.length === 0">Nenhuma sessao em atraso.</p>
+                </section>
+            </div>
+        </section>
+
+        <section aria-labelledby="dashboard-goals-title" class="border-y border-slate-200 py-6">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                    <h2 id="dashboard-goals-title" class="text-lg font-semibold text-slate-950">Metas atuais</h2>
+                    <p class="mt-1 text-sm text-slate-600"><span x-text="stats.goals.achieved">{{ $dashboard['goals']['achieved'] }}</span> atingidas de <span x-text="stats.goals.total">{{ $dashboard['goals']['total'] }}</span> metas no periodo atual</p>
+                </div>
+                <a href="{{ route('goals.index') }}" class="text-sm font-semibold text-teal-800 underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-teal-600">Gerenciar metas</a>
+            </div>
+            <div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3" x-show="stats.goals.items.length > 0">
+                <template x-for="goal in stats.goals.items" :key="goal.id">
+                    <article class="min-w-0 rounded-lg border border-slate-200 bg-white p-4">
+                        <div class="flex flex-wrap items-start justify-between gap-2">
+                            <h3 class="text-sm font-semibold text-slate-950" x-text="goal.period_label"></h3>
+                            <span class="text-xs font-semibold" :class="goal.status === 'Atingida' ? 'text-emerald-700' : 'text-teal-800'" x-text="goal.status"></span>
+                        </div>
+                        <p class="mt-2 text-xs text-slate-500"><span x-text="goal.starts_on"></span> a <span x-text="goal.ends_on"></span></p>
+                        <div class="mt-4 flex flex-wrap justify-between gap-2 text-sm">
+                            <span><span x-text="goal.achieved_label"></span> / <span x-text="goal.target_label"></span></span>
+                            <span class="font-semibold"><span x-text="goal.percentage"></span>%</span>
+                        </div>
+                        <div role="progressbar" :aria-label="'Progresso de ' + goal.period_label" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="goal.percentage" :aria-valuetext="goal.achieved_label + ' de ' + goal.target_label" class="mt-2 h-2 overflow-hidden rounded-full bg-slate-200">
+                            <div class="h-full bg-teal-600" :style="'width: ' + goal.percentage + '%'"></div>
+                        </div>
+                        <p class="mt-3 text-sm text-slate-600" x-text="goal.message"></p>
+                    </article>
+                </template>
+            </div>
+            <p class="mt-4 text-sm text-slate-600" x-show="stats.goals.items.length === 0">Nenhuma meta para o periodo atual.</p>
+        </section>
+
         <section class="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
             <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                 <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">

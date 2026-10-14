@@ -26,6 +26,7 @@ class StudyRecordFormatter
 
         return [
             'id' => $studyRecord->id,
+            'items_version' => $this->itemsVersion($studyRecord),
             'study_date' => $studyRecord->study_date->toDateString(),
             'studied' => $studyRecord->studied,
             'subject_id' => $firstItem?->subject_id ?? $studyRecord->subject_id,
@@ -45,6 +46,15 @@ class StudyRecordFormatter
                 ->values()
                 ->all(),
         ];
+    }
+
+    public function itemsVersion(StudyRecord $record): string
+    {
+        $record->loadMissing('items');
+
+        return hash('sha256', json_encode($record->items->sortBy('id')->map(fn (StudyRecordItem $item): array => [
+            $item->id, $item->subject_id, $item->content, $item->minutes, $item->position,
+        ])->values()->all(), JSON_THROW_ON_ERROR));
     }
 
     public function durationLabel(?int $minutes): ?string
@@ -149,6 +159,7 @@ class StudyRecordFormatter
             'time_minutes' => $item->minutes === null ? null : $item->minutes % 60,
             'duration_label' => $this->durationLabel($item->minutes),
             'position' => $item->position,
+            'planned_study_session_id' => $item->planned_study_session_id,
         ];
     }
 }

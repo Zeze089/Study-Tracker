@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\StudyRecord;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
@@ -15,7 +16,9 @@ class StoreStudyRecordRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        $record = $this->route('studyRecord');
+
+        return $this->user() !== null && ($record === null || $this->user()->can('update', $record));
     }
 
     /**
@@ -39,7 +42,12 @@ class StoreStudyRecordRequest extends FormRequest
         return [
             'study_date' => $studyDateRules,
             'studied' => ['required', 'boolean'],
-            'items' => ['nullable', 'array', 'max:12'],
+            'items' => ['nullable', 'array', 'list', 'max:12'],
+            'items.*' => ['array'],
+            'items.*.id' => ['nullable', 'integer', 'min:1', 'distinct'],
+            'items_version' => ['nullable', 'string', 'regex:/^[a-f0-9]{64}$/'],
+            'items.*.planned_study_session_id' => ['prohibited'],
+            'planned_study_session_id' => ['prohibited'],
             'items.*.subject_id' => [
                 'nullable',
                 'integer',
@@ -70,13 +78,29 @@ class StoreStudyRecordRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
+                if ($validator->errors()->isNotEmpty()) {
+                    return;
+                }
+                $rawItems = $this->input('items') ?? [];
+                $ids = collect($rawItems)->pluck('id')->filter()->map(fn ($id): int => (int) $id)->all();
+                if ($ids !== []) {
+                    $record = $this->route('studyRecord') ?? StudyRecord::query()
+                        ->where('user_id', $this->user()->id)
+                        ->whereDate('study_date', $this->input('study_date'))->first();
+                    $owned = $record?->items()->whereIn('id', $ids)->pluck('id')->all() ?? [];
+                    foreach ($rawItems as $index => $item) {
+                        if (isset($item['id']) && ! in_array((int) $item['id'], $owned, true)) {
+                            $validator->errors()->add("items.$index.id", 'O item nao pertence a este registro.');
+                        }
+                    }
+                }
                 $totalMinutes = $this->totalStudyMinutes();
 
                 if ($totalMinutes !== null && $totalMinutes > 1440) {
                     $validator->errors()->add('hours', 'O tempo estudado nao pode ultrapassar 24 horas.');
                 }
 
-                foreach ($this->input('items', []) as $index => $item) {
+                foreach ($rawItems as $index => $item) {
                     if (! is_array($item)) {
                         continue;
                     }
@@ -112,7 +136,7 @@ class StoreStudyRecordRequest extends FormRequest
     }
 
     /**
-     * @return array<int, array{subject_id: int|null, content: string|null, minutes: int|null, position: int}>
+     * @return array<int, array{id: int|null, subject_id: int|null, content: string|null, minutes: int|null, position: int}>
      */
     public function studyItems(): array
     {
@@ -143,13 +167,14 @@ class StoreStudyRecordRequest extends FormRequest
 
     /**
      * @param  array<string, mixed>  $item
-     * @return array{subject_id: int|null, content: string|null, minutes: int|null, position: int}
+     * @return array{id: int|null, subject_id: int|null, content: string|null, minutes: int|null, position: int}
      */
     private function normalizeItem(array $item, int $position): array
     {
         $content = trim((string) ($item['content'] ?? ''));
 
         return [
+            'id' => filled($item['id'] ?? null) ? (int) $item['id'] : null,
             'subject_id' => filled($item['subject_id'] ?? null) ? (int) $item['subject_id'] : null,
             'content' => $content === '' ? null : $content,
             'minutes' => $this->totalMinutesForItem($item),
@@ -174,11 +199,11 @@ class StoreStudyRecordRequest extends FormRequest
     }
 
     /**
-     * @param  array{subject_id: int|null, content: string|null, minutes: int|null, position: int}  $item
+     * @param  array{id: int|null, subject_id: int|null, content: string|null, minutes: int|null, position: int}  $item
      */
     private function itemIsBlank(array $item): bool
     {
-        return $item['subject_id'] === null
+        return $item['id'] === null && $item['subject_id'] === null
             && $item['content'] === null
             && $item['minutes'] === null;
     }

@@ -2,6 +2,7 @@
     $links = [
         ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard'],
         ['label' => 'Calendario', 'route' => 'calendar.index', 'active' => 'calendar.*'],
+        ['label' => 'Cronograma', 'route' => 'schedule.index', 'active' => 'schedule.*'],
         ['label' => 'Ano', 'route' => 'year.index', 'active' => 'year.*'],
         ['label' => 'Materias', 'route' => 'subjects.index', 'active' => 'subjects.*'],
         ['label' => 'Metas', 'route' => 'goals.index', 'active' => 'goals.*'],
@@ -20,7 +21,7 @@
                     </a>
                 </div>
 
-                <div class="hidden space-x-6 sm:-my-px sm:ms-10 lg:flex">
+                <div class="hidden space-x-4 sm:-my-px sm:ms-6 xl:flex">
                     @foreach ($links as $link)
                         <x-nav-link :href="route($link['route'])" :active="request()->routeIs($link['active'])">
                             {{ $link['label'] }}
@@ -29,7 +30,7 @@
                 </div>
             </div>
 
-            <div class="hidden gap-3 lg:ms-6 lg:flex lg:items-center">
+            <div class="hidden gap-3 xl:ms-6 xl:flex xl:items-center">
                 <x-theme-toggle />
 
                 <x-dropdown align="right" width="48">
@@ -59,7 +60,7 @@
                 </x-dropdown>
             </div>
 
-            <div class="-me-2 flex items-center lg:hidden">
+            <div class="-me-2 flex items-center xl:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center rounded-md p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus:bg-slate-100 focus:outline-none">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -70,7 +71,7 @@
         </div>
     </div>
 
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden lg:hidden">
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden xl:hidden">
         <div class="pt-2 pb-3 space-y-1">
             @foreach ($links as $link)
                 <x-responsive-nav-link :href="route($link['route'])" :active="request()->routeIs($link['active'])">

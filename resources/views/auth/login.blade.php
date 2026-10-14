@@ -22,6 +22,11 @@
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
+        <label for="remember" class="inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm text-slate-700">
+            <input id="remember" type="checkbox" name="remember" value="1" @checked(old('remember')) class="h-4 w-4 shrink-0 rounded border-slate-300 text-teal-700 focus:ring-teal-600" />
+            <span>Manter conectado</span>
+        </label>
+
         <button type="submit" class="inline-flex h-11 w-full items-center justify-center rounded-lg bg-teal-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2">
             Entrar
         </button>

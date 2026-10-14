@@ -13,6 +13,47 @@ class StudyStatsService
 {
     public function __construct(private StudyRecordFormatter $studyRecordFormatter) {}
 
+    /** @return array<string, mixed> */
+    public function dailyAndWeeklyIndicators(User $user, ?CarbonInterface $date = null): array
+    {
+        $today = $this->dateForUser($user, $date);
+        $start = $today->startOfWeek(CarbonInterface::MONDAY);
+        $records = $user->studyRecords()
+            ->with('items')
+            ->whereDate('study_date', '>=', $start->toDateString())
+            ->whereDate('study_date', '<=', $today->toDateString())
+            ->get();
+        $studied = $records->where('studied', true);
+        $minutesFor = fn (StudyRecord $record): int => $record->items->isEmpty()
+            ? (int) $record->minutes
+            : (int) $record->items->sum('minutes');
+        $todayRecords = $studied->filter(fn (StudyRecord $record): bool => $record->study_date->toDateString() === $today->toDateString());
+        $todayMinutes = (int) $todayRecords->sum($minutesFor);
+        $weeklyMinutes = (int) $studied->sum($minutesFor);
+        $linkedMinutes = (int) $studied->sum(fn (StudyRecord $record): int => (int) $record->items->whereNotNull('planned_study_session_id')->sum('minutes'));
+
+        return [
+            'daily' => [
+                'studied_days' => $todayRecords->count(),
+                'minutes' => $todayMinutes,
+                'duration_label' => $this->studyRecordFormatter->durationLabelOrZero($todayMinutes),
+            ],
+            'weekly' => [
+                'starts_on' => $start->toDateString(),
+                'ends_on' => $start->addDays(6)->toDateString(),
+                'period_label' => $start->format('d/m').' a '.$start->addDays(6)->format('d/m'),
+                'studied_days' => $studied->count(),
+                'registered_days' => $records->count(),
+                'minutes' => $weeklyMinutes,
+                'duration_label' => $this->studyRecordFormatter->durationLabelOrZero($weeklyMinutes),
+                'linked_minutes' => $linkedMinutes,
+                'linked_duration' => $this->studyRecordFormatter->durationLabelOrZero($linkedMinutes),
+                'unplanned_minutes' => max(0, $weeklyMinutes - $linkedMinutes),
+                'unplanned_duration' => $this->studyRecordFormatter->durationLabelOrZero(max(0, $weeklyMinutes - $linkedMinutes)),
+            ],
+        ];
+    }
+
     public function monthSummary(User $user, ?CarbonInterface $date = null, ?Collection $records = null): array
     {
         [$start, $end, $elapsedDays] = $this->periodWithinToday(

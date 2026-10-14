@@ -45,4 +45,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Goal::class);
     }
+
+    public function plannedStudySessions(): HasMany
+    {
+        return $this->hasMany(PlannedStudySession::class);
+    }
 }

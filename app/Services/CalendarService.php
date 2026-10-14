@@ -11,7 +11,8 @@ class CalendarService
 {
     public function __construct(
         private StudyStatsService $studyStats,
-        private StudyRecordFormatter $studyRecordFormatter
+        private StudyRecordFormatter $studyRecordFormatter,
+        private WeeklyScheduleService $schedule
     ) {}
 
     /**
@@ -56,6 +57,8 @@ class CalendarService
 
         $previousMonth = $start->subMonthNoOverflow();
         $nextMonth = $start->addMonthNoOverflow();
+        $planning = $this->schedule->sessionsInPeriod($user, $start, $end);
+        $planningByDay = $planning->groupBy(fn ($session): string => $session->scheduled_date->toDateString());
 
         return [
             'year' => $year,
@@ -66,7 +69,7 @@ class CalendarService
             'ends_on' => $end,
             'today' => $today,
             'records' => $records,
-            'weeks' => $this->weeks($start, $end, $today, $records),
+            'weeks' => $this->weeks($start, $end, $today, $records, $planningByDay),
             'weekday_labels' => ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'],
             'summary' => $this->studyStats->monthSummary($user, $start, $records),
             'previous_month' => [
@@ -97,18 +100,38 @@ class CalendarService
         return $filtered === false ? null : $filtered;
     }
 
+    /** @return array<string, array<string, int>> */
+    public function planningMarkers(User $user, int $year, int $month): array
+    {
+        $start = CarbonImmutable::create($year, $month, 1, 0, 0, 0, $user->timezone ?: config('app.timezone'));
+        $sessions = $this->schedule->sessionsInPeriod($user, $start, $start->endOfMonth());
+
+        return $sessions->groupBy(fn ($session): string => $session->scheduled_date->toDateString())
+            ->map(fn (Collection $items): array => [
+                'planned_count' => $items->count(),
+                'overdue_count' => $items->where('is_overdue', true)->count(),
+                'planned_minutes' => (int) $items->sum('planned_minutes'),
+            ])->all();
+    }
+
     /**
      * @param  Collection<string, StudyRecord>  $records
      * @return array<int, array<int, array<string, mixed>|null>>
      */
-    private function weeks(CarbonImmutable $start, CarbonImmutable $end, CarbonImmutable $today, Collection $records): array
+    private function weeks(CarbonImmutable $start, CarbonImmutable $end, CarbonImmutable $today, Collection $records, Collection $planning): array
     {
         $weeks = [];
         $week = array_fill(0, $start->dayOfWeekIso - 1, null);
 
         for ($date = $start; $date->lessThanOrEqualTo($end); $date = $date->addDay()) {
             $record = $records->get($date->toDateString());
-            $week[] = $this->day($date, $today, $record);
+            $day = $this->day($date, $today, $record);
+            $sessions = $planning->get($date->toDateString(), collect());
+            $day['planned_count'] = $sessions->count();
+            $day['overdue_count'] = $sessions->where('is_overdue', true)->count();
+            $day['planned_minutes'] = (int) $sessions->sum('planned_minutes');
+            $day['planning_url'] = route('schedule.index', ['week' => $date->toDateString(), 'date' => $date->toDateString()]).'#session-form';
+            $week[] = $day;
 
             if (count($week) === 7) {
                 $weeks[] = $week;

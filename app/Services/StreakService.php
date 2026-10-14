@@ -37,11 +37,12 @@ class StreakService
         return $streak;
     }
 
-    public function longestStreak(User $user): int
+    public function longestStreak(User $user, ?CarbonInterface $today = null): int
     {
         $records = StudyRecord::query()
             ->whereBelongsTo($user)
             ->where('studied', true)
+            ->whereDate('study_date', '<=', $this->dateForUser($user, $today)->toDateString())
             ->orderBy('study_date')
             ->get(['study_date']);
 

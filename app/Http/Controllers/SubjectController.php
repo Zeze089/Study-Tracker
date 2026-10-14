@@ -47,7 +47,7 @@ class SubjectController extends Controller
     {
         Gate::authorize('delete', $subject);
 
-        if ($subject->studyRecords()->exists() || $subject->studyRecordItems()->exists()) {
+        if ($subject->studyRecords()->exists() || $subject->studyRecordItems()->exists() || $subject->plannedStudySessions()->exists()) {
             return back()->with('error', 'Esta materia possui registros vinculados. Desative-a para preservar o historico.');
         }
 

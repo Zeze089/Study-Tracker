@@ -31,4 +31,9 @@ class StudyRecordItem extends Model
     {
         return $this->belongsTo(Subject::class);
     }
+
+    public function plannedStudySession(): BelongsTo
+    {
+        return $this->belongsTo(PlannedStudySession::class);
+    }
 }

@@ -36,6 +36,7 @@
             month: @js($calendar['month']),
             year: @js($calendar['year']),
             today: @js($calendar['today']->toDateString()),
+            planningUrl: @js(route('calendar.index')),
         })"
         x-on:study-record-saved.window="updateDay($event)"
     >
@@ -122,6 +123,7 @@
                         @if ($day === null)
                             <div class="calendar-day-empty min-h-[4.25rem] rounded-md border border-dashed border-slate-100 bg-slate-50/60 sm:min-h-[8.5rem]"></div>
                         @else
+                            <div class="min-w-0">
                             <button
                                 type="button"
                                 @disabled($day['is_future'])
@@ -133,7 +135,7 @@
                                 x-bind:data-future="day('{{ $day['date'] }}').is_future"
                                 x-bind:aria-label="day('{{ $day['date'] }}').aria_label"
                                 x-on:click="!day('{{ $day['date'] }}').is_future && $dispatch('open-study-record', { date: day('{{ $day['date'] }}').date, dateLabel: day('{{ $day['date'] }}').date_label, record: day('{{ $day['date'] }}').record })"
-                                class="calendar-day group relative flex min-h-[4.25rem] flex-col rounded-md border p-1.5 text-left transition focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-not-allowed sm:min-h-[8.5rem] sm:p-3"
+                                class="calendar-day group relative flex min-h-[4.25rem] w-full flex-col rounded-md border p-1.5 text-left transition focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-not-allowed sm:min-h-[8.5rem] sm:p-3"
                             >
                                 <span class="flex items-start justify-between gap-1">
                                     <span class="calendar-day-number text-sm font-semibold sm:text-base" x-text="day('{{ $day['date'] }}').day">{{ $day['day'] }}</span>
@@ -151,12 +153,17 @@
                                     <span class="block text-xs text-slate-500" x-text="day('{{ $day['date'] }}').duration_label || 'Sem tempo'">{{ $day['duration_label'] ?: 'Sem tempo' }}</span>
                                 </span>
                             </button>
+                            <a href="{{ $day['planning_url'] }}" aria-label="Planejar estudos em {{ $day['date_label'] }}; {{ $day['planned_count'] }} sessoes, {{ $day['overdue_count'] }} em atraso" :aria-label="'Planejar estudos em {{ $day['date_label'] }}; ' + day('{{ $day['date'] }}').planned_count + ' sessoes, ' + day('{{ $day['date'] }}').overdue_count + ' em atraso'" :class="day('{{ $day['date'] }}').overdue_count > 0 ? 'bg-amber-50 text-amber-800' : 'bg-sky-50 text-sky-800'" x-text="day('{{ $day['date'] }}').planned_count > 0 ? day('{{ $day['date'] }}').planned_count + ' planos' : 'Planejar'" class="mt-1 block rounded-sm px-0.5 py-1 text-center text-[0.6rem] font-semibold focus:outline-none focus:ring-2 focus:ring-teal-600 sm:text-xs">
+                                {{ $day['planned_count'] > 0 ? $day['planned_count'].' planos' : 'Planejar' }}
+                            </a>
+                            </div>
                         @endif
                     @endforeach
                 @endforeach
             </div>
         </section>
 
+        <p role="alert" class="text-sm text-rose-700" x-show="planningError" x-text="planningError" x-cloak></p>
         <x-study-record-panel :date="$today" :record="$todayRecord" :subjects="$subjects" mode="modal" />
     </div>
 </x-app-layout>

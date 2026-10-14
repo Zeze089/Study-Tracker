@@ -14,7 +14,9 @@ class DashboardService
     public function __construct(
         private StudyStatsService $studyStats,
         private StreakService $streaks,
-        private StudyRecordFormatter $studyRecordFormatter
+        private StudyRecordFormatter $studyRecordFormatter,
+        private GoalProgressService $goals,
+        private WeeklyScheduleService $schedule
     ) {}
 
     /**
@@ -45,7 +47,10 @@ class DashboardService
             ...$stats,
             'today_record' => $todayRecord ? $this->studyRecordFormatter->serialize($todayRecord) : null,
             'current_streak' => $this->streaks->currentStreak($user, $today),
-            'longest_streak' => $this->streaks->longestStreak($user),
+            'longest_streak' => $this->streaks->longestStreak($user, $today),
+            'study_indicators' => $this->studyStats->dailyAndWeeklyIndicators($user, $today),
+            'goals' => $this->goals->dashboardData($user, $today),
+            'planning' => $this->schedule->dashboardData($user),
         ];
     }
 
@@ -73,7 +78,7 @@ class DashboardService
         $timezone = $user->timezone ?: config('app.timezone');
 
         return ($date instanceof CarbonInterface
-            ? CarbonImmutable::parse($date, $timezone)
+            ? CarbonImmutable::instance($date)->setTimezone($timezone)
             : now($timezone)->toImmutable()
         )->startOfDay();
     }

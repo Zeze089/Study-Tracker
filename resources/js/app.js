@@ -147,6 +147,7 @@ window.studyRecordForm = function (config) {
         requestPayload() {
             return {
                 study_date: this.form.study_date,
+                items_version: this.record?.items_version ?? null,
                 studied: this.form.studied === '1',
                 items: this.form.studied === '1' ? this.normalizedItems() : [],
                 notes: this.form.notes || null,
@@ -156,6 +157,7 @@ window.studyRecordForm = function (config) {
         itemsFromRecord(record) {
             if (record?.items?.length > 0) {
                 return record.items.map((item) => ({
+                    id: item.id,
                     key: this.nextItemKey++,
                     subject_id: item.subject_id ?? '',
                     subject_name: item.subject_name,
@@ -209,6 +211,7 @@ window.studyRecordForm = function (config) {
         normalizedItems() {
             return this.form.items
                 .map((item) => ({
+                    id: item.id ?? null,
                     subject_id: item.subject_id === '' ? null : Number(item.subject_id),
                     content: item.content || null,
                     hours: item.hours === '' ? null : Number(item.hours),
@@ -218,7 +221,7 @@ window.studyRecordForm = function (config) {
         },
 
         itemIsBlank(item) {
-            return item.subject_id === null
+            return item.id == null && item.subject_id === null
                 && item.content === null
                 && item.hours === null
                 && item.time_minutes === null;
@@ -351,6 +354,29 @@ window.studyCalendar = function (config) {
             day.aria_label = `${this.formatDateLabel(record.study_date)}: ${day.status_label}${day.is_today ? ', hoje' : ''}`;
 
             this.updateSummary(previousRecord, record);
+            this.refreshPlanning();
+        },
+
+        planningError: '',
+
+        async refreshPlanning() {
+            if (!config.planningUrl) {
+                return;
+            }
+            try {
+                const params = new URLSearchParams({ month: config.month, year: config.year });
+                const response = await fetch(config.planningUrl + '?' + params, { headers: { Accept: 'application/json' } });
+                if (!response.ok) {
+                    throw new Error('planning refresh failed');
+                }
+                const data = await response.json();
+                for (const [date, day] of Object.entries(this.days)) {
+                    Object.assign(day, data.planning[date] || { planned_count: 0, overdue_count: 0, planned_minutes: 0 });
+                }
+                this.planningError = '';
+            } catch {
+                this.planningError = 'Nao foi possivel atualizar o planejamento. Recarregue o calendario.';
+            }
         },
 
         updateSummary(previousRecord, record) {
